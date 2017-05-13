@@ -9,7 +9,7 @@
 #define d (256-FOSC/24/9397) 	//9397Hz
 #define e (256-FOSC/24/10540)	//10540Hz
 #define f (256-FOSC/24/11175)	//11175Hz
-#define g (256-FOSC/24/12544)	//12544Hz 
+#define g (256-FOSC/24/12544)	//12544Hz hello
 
 bit set_settings=0;
 bit correctflag=1;
