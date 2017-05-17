@@ -138,7 +138,7 @@ void timer0(void) interrupt 1 {
 			if (correct==2 & phasecounter==delay_duration){phase=0; phasecounter=-1;}
 			else if (phasecounter==punishment_duration+delay_duration){phase=0; phasecounter=-1;}}		 //phasecounter resets every phase change}
 		if (phase==0){
-			if (phasecounter==1){BRT=Tone2Freq(song[k]); WAKE_CLKO=0x04;}
+			if (phasecounter==1){BRT=Tone2Freq(song[k]); WAKE_CLKO=0x04; ScheduledTransmission(0x71,(j>>8)&0xff,j);}
 			else if (phasecounter == tone_duration){WAKE_CLKO=0; k++; BRT=Tone2Freq(song[k]);}  
 			else if (phasecounter == k*(tone_duration+time_between_tones)){WAKE_CLKO=0x04;}
 			else if (k !=3 & phasecounter == (k+1)*tone_duration+k*time_between_tones){WAKE_CLKO=0; k++; BRT=Tone2Freq(song[k]);}
@@ -208,7 +208,7 @@ void main(){
 				song[i]=tones[rand()%7]; tonedifficulty=ToneDifficulty(song[i]);	//if target==1, song = cdef. if not, random song
 				songdifficulty=songdifficulty+abs(tonedifficulty-targetdifficulty[i]);}}}
 		waitfordata();
-		j++; ScheduledTransmission(0x71,(j>>8)&0xff,j);
+		j++; 
 		//if(j>=trial_number){j=0;}																	
 		while(phase==0){}			
 		while(phase==1){}}}
