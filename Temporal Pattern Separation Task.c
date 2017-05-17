@@ -177,10 +177,10 @@ void Uart_Isr() interrupt 4 {
 
 char ToneDifficulty(char tone){	
 	unsigned char tonedifficulty=0;
-//	switch(tone){
-//		case 0: tonedifficulty=0; break; case 1: tonedifficulty=2; break; case 2: tonedifficulty=3; break; 	
-//		case 3: tonedifficulty=5; break; case 4: tonedifficulty=7; break; case 5: tonedifficulty=8; break;
-//	 	case 6: tonedifficulty=10; break;}
+	switch(tone){
+		case 0: tonedifficulty=0; break; case 1: tonedifficulty=2; break; case 2: tonedifficulty=3; break; 	
+		case 3: tonedifficulty=5; break; case 4: tonedifficulty=7; break; case 5: tonedifficulty=8; break;
+	 	case 6: tonedifficulty=10; break;}
 	return tonedifficulty;}
 
 void main(){
