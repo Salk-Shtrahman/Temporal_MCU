@@ -40,7 +40,7 @@ sbit leftvalve=P3^4;
 unsigned char no_lick_help_likelyhood=2;
 unsigned char chance_mouse_drop=0;
 unsigned char lickdoesntcount=0;
-unsigned char parameters[21]={0x48,0x32,0x55,0x22,0x00,0x01,0x2C,0x01,0x2C,0x01,0xF4,0x00,0xC8,0x1E,0x14,0x23,0x23,0x00,0x0A,0x03,0x3D};
+unsigned char parameters[26]={0x48,0x32,0x55,0x22,0x00,0x01,0x2C,0x01,0x2C,0x01,0xF4,0x00,0xC8,0x1E,0x14,0x23,0x23,0x00,0x0A,0x03,0x3D};
 unsigned char tone_index[6]={0xFF,0xFF,0xFF,0xFF,0xFF,0xFF};
 unsigned char parameter_index=0;		
 unsigned char no_lick_help=8;		
@@ -95,7 +95,7 @@ void ScheduledTransmission3(){
 void waitfordata(){
 	unsigned char n=0; EX1=0; EX0=0; stoptimer=1;
 	while (pause){
-		if (set_settings){
+		if (set_settings){MCUchecksum=0;
 			checksum=(((unsigned int)parameters[24])<<8)+parameters[25];
 			for (n=0;n<=23;n++){MCUchecksum=MCUchecksum+parameters[n];}
 				if(MCUchecksum==checksum){RegularTransmission(0x77);
@@ -117,7 +117,7 @@ void waitfordata(){
 					no_lick_help=parameters[22];
 					no_lick_help_likelyhood=parameters[23];}
 			else {RegularTransmission(0x75);}
-			set_settings=0; MCUchecksum=0;}} EX1=1; EX0=1; stoptimer=0;}
+			set_settings=0;}} EX1=1; EX0=1; stoptimer=0;}
 
 void timer0(void) interrupt 1 {
 	TL0=0x2B; TH0=0xB1;//initial values loaded to timer 100HZ (.01s period) 65355-(24,000,000/12/100)=45355 45355(dec)->B12B(hex) TH0=B1 TL0=2B			
@@ -159,7 +159,9 @@ void exint1() interrupt 2 {	   //right lick interrupt (location at 0013H)
 void Uart_Isr() interrupt 4 {
 	if (RI){RI=0; info=SBUF;
 		if (receive_settings){parameters[parameter_index]=info; parameter_index++;
-			if (parameter_index==20){set_settings=1; receive_settings=0; parameter_index=0;}}
+			//27 might be 1 too high, but I don't think so.
+			
+			if (parameter_index==27){set_settings=1; receive_settings=0; parameter_index=0;}}
 		else {
 			if (pause & info==0x88) { 	//flush ON
 				rightvalve=1; leftvalve=1; rightlight=0; leftlight=0;}
@@ -174,15 +176,16 @@ void main(){
 	unsigned char tonedifficulty=0;
 	unsigned char i=0;
 	EX0=0; EX1=0;P3=0xAF; IP=0x10; IPH=0x12; 
+	P3M0=0x50; P3M1=0x00; rightvalve=0; leftvalve=0; //configures port 3, for valves
 	AUXR=0x10; SCON=0x5a; TMOD=0x21;       //8 bit data, no parity bit.. 8-bit auto reload timer 1 and 16 bit timer 0
-	TH1=TL1=0xFD;           //Set Uart baudrate	(21000?)
+	TH1=TL1=0xFD;           //Set Uart baudrate	(19200)
 	TL0=0x2B;  TH0=0xB1;    //initial values loaded to timer 100HZ (.01s period); 65355-(24,000,000/12/100)=45355 45355(dec)->B12B(hex) TH0=B1 TL0=2B
 	TCON=0x55; TR1=1; TR0=1;			//start timers 0 and 1	 
 	IE=0x82; REN=1; ES=1; //enable all interrupts																			   
-	P3M0=0x50; P3M1=0x00;  //configures port 3, for valves
 	waitfordata(); 
 	srand(TL0);  EX0=1; EX1=1; 
 	for (i=0;i<=5;i++){if (targetsong[i]!=0xFF){NUM_TONES_PER_SONG++;}}
+	phasecounter=-1;
 	while(1){	
 		if ((training_phase==0 | (training_phase==1 & correctflag)) & j%3==0){correctflag=0; target=!target;}
 		else if ((training_phase==2 & correct==1) | training_phase==3){target=rand()%2;} //song composed in phase 3		
