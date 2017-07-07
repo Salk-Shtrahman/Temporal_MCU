@@ -116,7 +116,7 @@ void waitfordata(){
 					drip_delay_time=parameters[21];		//only applies to trainingphase 1
 					no_lick_help=parameters[22];
 					no_lick_help_likelyhood=parameters[23];}
-			else {RegularTransmission(0x75);}
+			else {RegularTransmission(0x75);RegularTransmission(MCUchecksum>>8); RegularTransmission(MCUchecksum);}
 			set_settings=0;}} EX1=1; EX0=1; stoptimer=0;}
 
 void timer0(void) interrupt 1 {
@@ -144,24 +144,22 @@ void timer0(void) interrupt 1 {
 					if(chance_mouse_drop==0){nolickcount=0; lickdoesntcount=1; 
 						if(target){rightdripflag=1;} else{leftdripflag=1;}}}}}}}
 									
-void exint0() interrupt 0 {	   //left lick interrupt (location at 0003H)
+void exint0() interrupt 0 {	   //left?	lick interrupt (location at 0003H)
 	RegularTransmission(0xFD); 
-	if (phase==1){mouselicked=0x02; phase=2; phasecounter=0; nolickcount=0;
-		if (!target){correct=0x01; correctflag=1; if (!lickdoesntcount){leftdripflag=1;}}
+	if (phase==1){mouselicked=0x01; phase=2; phasecounter=0; nolickcount=0;
+		if (target){correct=0x01; correctflag=1; if (!lickdoesntcount){rightdripflag=1;}}
 		else {correct=0x02;} ScheduledTransmission3();} lickdoesntcount=0;}
 
-void exint1() interrupt 2 {	   //right lick interrupt (location at 0013H)
+void exint1() interrupt 2 {	   //right? lick interrupt (location at 0013H)
 	RegularTransmission(0xFE);   	
-	if (phase==1){mouselicked=0x01; phase=2; phasecounter=0; nolickcount=0;
-		if (target){correct=0x01; correctflag=1; if (!lickdoesntcount){rightdripflag=1;}}//if mouse was supposed to lick right lead, it is incorrect, so correct=2
+	if (phase==1){mouselicked=0x02; phase=2; phasecounter=0; nolickcount=0;
+		if (!target){correct=0x01; correctflag=1; if (!lickdoesntcount){leftdripflag=1;}}//if mouse was supposed to lick right lead, it is incorrect, so correct=2
 		else {correct=0x02;} ScheduledTransmission3();} lickdoesntcount=0;}
 		
 void Uart_Isr() interrupt 4 {
 	if (RI){RI=0; info=SBUF;
 		if (receive_settings){parameters[parameter_index]=info; parameter_index++;
-			//27 might be 1 too high, but I don't think so.
-			
-			if (parameter_index==27){set_settings=1; receive_settings=0; parameter_index=0;}}
+			if (parameter_index==26){set_settings=1; receive_settings=0; parameter_index=0;}}
 		else {
 			if (pause & info==0x88) { 	//flush ON
 				rightvalve=1; leftvalve=1; rightlight=0; leftlight=0;}
