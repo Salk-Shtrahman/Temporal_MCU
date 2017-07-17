@@ -138,7 +138,7 @@ void timer0(void) interrupt 1 {
 			if (phasecounter == k*(tone_duration+time_between_tones)){WAKE_CLKO=0x04;}
 			else if (k < NUM_TONES_PER_SONG & (phasecounter == (k+1)*tone_duration+k*time_between_tones)){WAKE_CLKO=0; k++; BRT=song[k];}
 			if (k == NUM_TONES_PER_SONG){phase=1; ScheduledTransmission2(); phasecounter=0; 
-				if (training_phase==0){nolickcount=0; lickdoesntcount=1;
+				if (training_phase==1){nolickcount=0; lickdoesntcount=1;
 					if(target){rightdripflag=1;} else{leftdripflag=1;}}
 				else if (nolickcount>=no_lick_help){chance_mouse_drop=rand()%(no_lick_help_likelyhood-1);
 					if(chance_mouse_drop==0){nolickcount=0; lickdoesntcount=1; 
@@ -185,8 +185,9 @@ void main(){
 	for (i=0;i<=5;i++){if (targetsong[i]!=0xFF){NUM_TONES_PER_SONG++;}}
 	phasecounter=-1;
 	while(1){	
-		if ((training_phase==0 | (training_phase==1 & correctflag)) & j%3==0){correctflag=0; target=!target;}
-		else if ((training_phase==2 & correct==1) | training_phase==3){target=rand()%2;} //song composed in phase 3		
+		if (training_phase==0) {target=1;}
+		else if ((training_phase==1 | (training_phase==2 & correctflag)) & j%3==0){correctflag=0; target=!target;}
+		else if ((training_phase==3 & correct==1) | training_phase==4){target=rand()%2;}	
 		if (target){songdifficulty=0;
 			for(i=0;i<=NUM_TONES_PER_SONG-1;i++){tone_index[i]=targetsong[i]; song[i]=tones[tone_index[i]];}} 	
 		else{
